@@ -1,13 +1,22 @@
 let squarer;
 
-function loadWebAssembly(fileName) {
-  return fetch(fileName)
-    .then(response => response.arrayBuffer())
-    .then(buffer => WebAssembly.compile(buffer))
-    .then(module => new WebAssembly.Instance(module));
-}
+const loadWebAssembly = async fileName => {
+  try {
+    const response = await fetch(fileName);
+    const buffer = await response.arrayBuffer();
+    const module = await WebAssembly.compile(buffer);
+    return Promise.resolve(new WebAssembly.Instance(module));
+  } catch (error) {
+    return Promise.reject(error);
+  }
+};
 
-loadWebAssembly('squarer.wasm').then(instance => {
-  squarer = instance.exports._Z7squareri;
-  console.log('Compiled finished!');
-});
+(async () => {
+  try {
+    const instance = await loadWebAssembly('squarer.wasm');
+    squarer = instance.exports._Z7squareri;
+    console.log('Compiled finished!');
+  } catch (error) {
+    console.log(error.message);
+  }
+})();
